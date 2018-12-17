@@ -187,10 +187,11 @@ DESCRIPTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //   $("li:last-of-type").css("width", "110px");
         },
         on_finish: function(data) {
-          var parsed_response = JSON.parse(data.responses);
+          var parsed_response  = JSON.parse(data.responses);
           data.agressivity     = parsed_response.Q0 * 10;
           data.trustworthiness = parsed_response.Q1 * 10;
           data.criminality     = parsed_response.Q2 * 10;
+          data.ci              = ciImg.imgHtml;
         },
     };
     judgments.push(likert_trial);
