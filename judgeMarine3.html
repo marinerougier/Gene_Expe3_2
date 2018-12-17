@@ -1,0 +1,303 @@
+<!-- 
+DESCRIPTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+-->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>exp</title>
+  <script src="jspsych-6.0.3/jspsych.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-fullscreen.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-keyboard-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-html-button-response.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-text.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-likert.js"></script>
+  <script src="jspsych-6.0.3/plugins/jspsych-survey-multi-choice.js"></script>
+  <script src="js/jspsych-html-slider-response_required.js"></script>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/lodash.min.js"></script>
+  <script src="js/firebase.js"></script>
+  <link href="jspsych-6.0.3/css/jspsych.css" rel="stylesheet" type="text/css">
+  <style>
+  body {
+    cursor: default;
+  }
+  #jspsych-html-slider-response-next {
+    margin: 0px;
+  }
+  .imgJudge {
+    width: 300px;
+    margin: 0px;
+    padding: 0px;
+  }
+  .jspsych-content-wrapper {
+    width: 800px;
+    height: 600px;
+  }
+</style>
+</head>
+<body></body>
+<script>
+  /* Parameters */
+  var n = 2; // number of CIs randomly sample for each cell
+  var githubCIs = 'https://raw.githubusercontent.com/marinerougier/eval_AppAggPeace_cis/master/cis/'; // github CIs path
+
+  /* Initial variables */
+  var timeline = [];
+  var preloadimages = [];
+  var prolificID = jsPsych.data.getURLVariable("prolificID"); // Need to add ?prolificID={{%PROLIFIC_PID%}} at the end of the prolific survey link!
+
+  /* Functions */
+  function flatten(arr) {
+    return arr.reduce(function (flat, toFlatten) {
+      return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+    }, []);
+  };
+
+  // CIs
+  var imgLink = ["blue_avg_gp1_App_agg.jpeg","blue_avg_gp1_App_peace.jpeg"];
+
+  // Add relative path to CIs
+  imgLink = imgLink.map(function(e) {return githubCIs + e});
+
+  // CIs stims
+  CIsStims = imgLink.map(function(e) {return {imgHtml: "<img class='imgJudge' src='" + e + "'>"}});
+
+  // Randomly sample n CIs
+  var sampledCIsStims = _.sampleSize(CIsStims, n);
+
+  // Preload images
+  preloadimages.push(imgLink);
+  preloadimages = flatten(preloadimages);
+
+
+  // EXPERIMENT --------------------------------------------------------------------------------------------------------
+
+  /* FULL SCREEN MODE */
+  var activeFullscreen = {
+    message: "",
+    button_label: "Veuillez cliquer ici pour activer le mode plein écran",
+    type: 'fullscreen',
+    fullscreen_mode: true,
+    delay_after: 200,
+  };
+
+  /* CONSENT */
+  var consent = {
+    type: 'html-button-response',
+    stimulus: function() {
+        html = "";
+        html += "<h1>Consentement éclairé</h1>";
+        html += "<p class='justify'>Dans cette étude, vous allez devoir évaluer des visages sur plusieurs traits. ";
+        html += "La durée de cette étude est d'environ <strong>5 minutes</strong>. Durant cette période, ";
+        html += "il est important que vous restiez pleinement <strong>concentré.e</strong>.</p>";
+        html += "<p class='justify'>Votre participation est volontaire, n'implique aucun risque, et vos réponses seront ";
+        html += "enregistrées de manière anonyme. Vous êtes libre de vous retirer de l'étude à tout moment. Après avoir ";
+        html += "complété l'entièreté de l'étude, vous recevrez une <strong>compensation monétaire</strong> ";
+        html += "tel que décrit dans l'annonce Foule Factory.</p>";
+        html += "<p class='justify'>Cette étude est administrée par Marine Rougier, post-doctorante à l'UCLouvain (Belgique). ";
+        html += "Si vous avez des questions ou commentaires, contactez-moi à l'adresse suivante : <strong>marine.rougier@uclouvain.be</strong></p>";
+        return html;
+    },
+    choices: ["J'accepte de participer à cette étude"],
+  };
+
+  /* PREVIEW CIS INSTRUCTIONS */
+  var previewCIinst = {
+    type: "html-keyboard-response",
+    post_trial_gap: 300,
+    choices: [32],
+    stimulus: function() {
+      var html = "";
+      html += "<h1>Evaluation des visages</h1>";
+      html += "<p class='justify'>Dans cette étude, vous allez devoir évaluer <b>XXX visages</b> et indiquer, pour "
+      html += "chacun d'entre eux, à quel point celui-ci vous paraît <b>aggressif, digne de confiance</b> et ";
+      html += "<b>criminel</b> (de 0 = pas du tout à 100 = totalement) </br> ";
+      html += "Comme vous allez le voir, les visages qui vous seront présentés ont été rendus ";
+      html += "<b>flous</b> afin de rendre la tâche moins aisée. </br></br>";
+      html += "Notez qu'il est <b>extrêmement important</b> que vous répondiez aussi honnêtement et ";
+      html += "spontanément que possible. La première réponse qui vient à l'esprit est généralement la meilleure. </br></br>";
+      html += "Avant la tâche d’évaluation, un échantillon de visages ";
+      html += "va vous être présenté (chaque visage apparaitra durant une seconde). Ceci vous permettra de mieux ";
+      html += "prendre en compte les similarités/différences entre les visages avant leur évaluation.</br>";
+      html += "Les visages défileront automatiquement, veuillez être attentif.</br></br>";
+      html += "<p></br>appuyez sur <span class='light-keys'><kbd>espace</kbd></span> pour commencer</p>";
+      return html;
+    },
+  };
+
+  /* PREVIEW CIS */
+  var previewCI = {
+    timeline_variables: CIsStims,
+    choices: jsPsych.NO_KEYS,
+    trial_duration: 800,
+    post_trial_gap: 200,
+    timeline: [{
+      type: 'html-keyboard-response',
+      stimulus: function() {return jsPsych.timelineVariable('imgHtml', true)},
+    }]
+  };
+
+  /* JUDGMENTS INSTRUCTIONS */
+  var jugmentInst = {
+    type: "html-keyboard-response",
+    post_trial_gap: 300,
+    choices: [32],
+    stimulus: function() {
+      var html = "";
+      html += "<h1>Evaluation des visages</h1>";
+      html += "<p class='justify'>Nous allons maintenant vous demander d'indiquer, "
+      html += "pour chaque visage (25 visages), à quel point celui-ci vous paraît <b>XXX</b> ";
+      html += "sur une échelle allant de 0 (pas du tout XXX) à 100 (très XXX).</br></br>";
+      html += "Notez qu'il est extrêmement important que vous répondiez de façon honnête et spontanée.</br></br>";
+      html += "<p></br>appuyez sur <span class='light-keys'><kbd>espace</kbd></span> pour commencer</p>";
+      return html;
+    },
+  };
+
+
+  // Judgments
+
+  var scaleAgressivity = ["0</br>Pas du tout agressif", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100</br>Totalement agressif"];
+  var scaleTrustworthiness = ["0</br>Pas du tout digne de confiance", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100</br>Totalement digne de confiance"];
+  var scaleCriminality = ["0</br>Pas du tout criminel", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100</br>Totalement criminel"];
+
+  var judgments = [];
+  CIsStims.map(function(ciImg){
+    var likert_trial = {
+        type: 'survey-likert',
+        preamble: ciImg.imgHtml,
+        questions: [
+          {prompt: "", labels: scaleAgressivity, required: true},
+          {prompt: "", labels: scaleTrustworthiness, required: true},
+          {prompt: "", labels: scaleCriminality, required: true},
+        ],
+        button_label: 'Continuer',
+        on_load: function() {
+          $(".jspsych-content").css("max-width", "100%");
+          $(".jspsych-survey-likert-statement").css("margin", "0px");
+          $(".jspsych-survey-likert-statement").css("padding", "0px");
+          $(".jspsych-survey-likert-opts").css("padding", "0 0 10px");
+          $("#jspsych-survey-likert-next").css("margin-top", "10px");
+          $("#jspsych-survey-likert-form").css("width", "800px");
+          $("li").css("width", "9%");
+        //   $("li:first-of-type").css("width", "110px");
+        //   $("li:last-of-type").css("width", "110px");
+        },
+        on_finish: function(data) {
+          var parsed_response = JSON.parse(data.responses);
+          data.agressivity     = parsed_response.Q0 * 10;
+          data.trustworthiness = parsed_response.Q1 * 10;
+          data.criminality     = parsed_response.Q2 * 10;
+        },
+    };
+    judgments.push(likert_trial);
+  });
+
+
+  /* AGE */
+  var age = {
+      timeline: [{
+        type: 'survey-text',
+        questions: [{prompt: "Veuillez indiquer votre âge :", rows: 1, columns: 10}],
+        button_label: "Continuer",
+      }],
+      loop_function: function(data){ 
+        var age = data.values()[0].responses;
+        var age = JSON.parse(age).Q0; 
+        if(age == ""){
+          alert("Veuillez indiquer votre âge !"); 
+          return true; 
+        }
+      },
+      on_finish: function(data) {
+          jsPsych.data.addProperties({
+              age: JSON.parse(data.responses)["Q0"],
+          });
+      },
+  };
+
+  var gender = {
+      type: 'survey-multi-choice',
+      questions: [{prompt: "Veuillez indiquer votre genre :", options: [' homme', ' femme', ' autre'], required: true}],
+      button_label: "Continuer",
+      on_finish: function(data) {
+          jsPsych.data.addProperties({
+              gender: JSON.parse(data.responses)["Q0"],
+          });
+      },
+  };
+
+  /* EXIT FULLSCREEN MODE */
+  var exitFullscreen = {
+    type: 'fullscreen',
+    fullscreen_mode: false
+  };
+
+  /* DEBRIEF */
+  var debrief = [];
+  debrief += "<h1>Fin de l'expérience</h1>";
+  debrief += "<p class='justify'>Merci pour votre participation ! Cette étude avait pour but d'étudier la perception générale ";
+  debrief += "qu'ont les individus de visages inconnus et ambigus.</br></br> "
+  debrief += "<b>Veuillez copier le code suivant sur Foule Factory pour valider votre participation :</b></p> ";
+  debrief += "<h1>JYP63M</h1>";
+  //debrief += "<a href='https://www.google.com/' target='_blank'>cliquer ici pour valider votre expérience</a>";
+
+  // TIMELINE ----------------------------------------------------------------------------------------------------------
+  timeline.push(activeFullscreen);
+  timeline.push(consent);
+  timeline.push(previewCIinst);
+  timeline.push(previewCI);
+  timeline.push(judgments);
+  timeline.push(age);
+  timeline.push(gender);
+  timeline.push(exitFullscreen);
+  
+  timeline = flatten(timeline); // do not remove this!
+
+  // INITIALISE EXP ----------------------------------------------------------------------------------------------------
+  jsPsych.init({
+    timeline: timeline,
+    preload_images: preloadimages,
+    max_load_time: 500*1000,
+    exclusions: {
+      min_width: 800,
+      min_height: 600,
+    },
+    on_finish: function(data) { 
+      $("#jspsych-content").html("<img src='https://i.gifer.com/4V0b.gif'>");
+
+      /* Initialize Firebase */
+      var config = {
+        apiKey: "AIzaSyBwDr8n-RNCbBOk1lKIxw7AFgslXGcnQzM",
+        databaseURL: "https://marineexpe.firebaseio.com/"
+      };
+
+      firebase.initializeApp(config);
+      var database = firebase.database();
+      id = jsPsych.randomization.randomID(15); // short ID
+
+      /* jsPsych: add data to every trial */
+      jsPsych.data.addProperties({
+        prolificID: prolificID,
+        id: id,
+        //traitsOrder: traitsOrder,
+        totalTime: jsPsych.totalTime()
+      });
+
+      var subdata = data.filter({trial_type: 'survey-likert'}).csv();
+    //   jsPsych.data.displayData();
+
+      /* Send data to Firebase and redirect to Qualtrics */
+      database.ref("judgeMarine3/" + id + "/").update({subdata}).then(function() { 
+        console.log("data sent!");
+        $("#jspsych-content").html(debrief);
+        //window.location = qlink; // redirect to qualtrics
+      });
+    }
+  });
+</script>
+
+</html>
