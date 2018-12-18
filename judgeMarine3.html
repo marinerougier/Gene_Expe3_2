@@ -139,14 +139,14 @@ DESCRIPTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     stimulus: function() {
       var html = "";
       html += "<h1>Evaluation des visages</h1>";
-      html += "<p class='justify'>Dans cette étude, vous allez devoir évaluer <b>XXX visages</b> et indiquer, pour "
+      html += "<p class='justify'>Dans cette étude, vous allez devoir évaluer <b>40 visages</b> et indiquer, pour "
       html += "chacun d'entre eux, à quel point celui-ci vous paraît <b>aggressif, digne de confiance</b> et ";
       html += "<b>criminel</b> (de 0 = pas du tout à 100 = totalement) </br> ";
       html += "Comme vous allez le voir, les visages qui vous seront présentés ont été rendus ";
       html += "<b>flous</b> afin de rendre la tâche moins aisée. </br></br>";
       html += "Notez qu'il est <b>extrêmement important</b> que vous répondiez aussi honnêtement et ";
       html += "spontanément que possible. La première réponse qui vient à l'esprit est généralement la meilleure. </br></br>";
-      html += "Avant la tâche d’évaluation, un échantillon de visages ";
+      html += "Avant la tâche d’évaluation, un échantillon de 20 visages ";
       html += "va vous être présenté (chaque visage apparaitra durant une seconde). Ceci vous permettra de mieux ";
       html += "prendre en compte les similarités/différences entre les visages avant leur évaluation.</br>";
       html += "Les visages défileront automatiquement, veuillez être attentif.</br></br>";
@@ -160,7 +160,7 @@ DESCRIPTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     timeline_variables: CIs_preview,
     choices: jsPsych.NO_KEYS,
     trial_duration: 800,
-    post_trial_gap: 200,
+    post_trial_gap: 0,
     timeline: [{
       type: 'html-keyboard-response',
       stimulus: function() {return jsPsych.timelineVariable('imgHtml', true)},
