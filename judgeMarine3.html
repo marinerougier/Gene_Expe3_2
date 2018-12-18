@@ -87,15 +87,18 @@ DESCRIPTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   // Approach / avoidance
   cis_vaast_app = cis_vaast.map(function(e) {return githubCIs + "ci_" + e + '_app_AAT.jpeg'});
+  console.log(cis_vaast)
   cis_vaast_avd = cis_vaast.map(function(e) {return githubCIs + "ci_" + e + '_av_AAT.jpeg'});
+  console.log(cis_vaast)
   cis_instr_app = cis_instr.map(function(e) {return githubCIs + "ci_" + e + '_app_Instr.jpeg'});
   cis_instr_avd = cis_instr.map(function(e) {return githubCIs + "ci_" + e + '_av_Instr.jpeg'});
 
-  var CIsStims = [cis_vaast_app, cis_vaast_avd, cis_instr_app, cis_instr_avd];
+  var CIsStims = _.flattenDeep([cis_vaast_app, cis_vaast_avd, cis_instr_app, cis_instr_avd]);
   preloadimages.push(CIsStims);
 
   // CIs stims
   CIsStims = CIsStims.map(function(e) {return {imgHtml: "<img class='imgJudge' src='" + e + "'>"}});
+  CIsStims = _.shuffle(CIsStims); // randomize order
 
   // EXPERIMENT --------------------------------------------------------------------------------------------------------
 
@@ -271,10 +274,10 @@ DESCRIPTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //debrief += "<a href='https://www.google.com/' target='_blank'>cliquer ici pour valider votre expérience</a>";
 
   // TIMELINE ----------------------------------------------------------------------------------------------------------
-  timeline.push(activeFullscreen);
-  timeline.push(consent);
-  timeline.push(previewCIinst);
-  timeline.push(previewCI);
+  // timeline.push(activeFullscreen);
+  // timeline.push(consent);
+  // timeline.push(previewCIinst);
+  // timeline.push(previewCI);
   timeline.push(judgments);
   timeline.push(age);
   timeline.push(gender);
